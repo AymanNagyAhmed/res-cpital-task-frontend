@@ -1,64 +1,63 @@
-import api from "services/api";
-import TokenService from "services/token";
+import api from "@/services/api";
+import store from "@/store";
 
 export const register = ({ username, email, password1, password2 }) => {
   return api
     .post("auth/registration/", {
-      username,
+      name,
       email,
-      password1,
-      password2,
+    password
+     
     })
-    .then((response) => {
-      if (response.data.access_token) {
-        let user = response.data.user;
-        TokenService.updateLocalAccessToken(response.data.access_token);
-        user.refresh_token = response.data.refresh_token;
-        TokenService.setUser(response.data.user);
+    .then(({data}) => {
+      if (data.data.token) {
+        let user = data.data;
+        store.commit("token/updateLocalAccessToken",data.data.access_token);
+        user.refresh_token = data.data.refresh_token;
+         store.commit("token/setUser",user);
       }
 
-      return response.data;
+      return data.data;
     });
 };
 
-export const login = ({ username, password }) => {
+export const login = ({ email, password }) => {
   return api
     .post("login/", {
-      username,
+      email,
       password,
     })
-    .then((response) => {
-      if (response.data.access_token) {
-        let user = response.data.user;
-        TokenService.updateLocalAccessToken(response.data.access_token);
-        user.refresh_token = response.data.refresh_token;
-        TokenService.setUser(user);
+    .then(({data}) => {
+      
+      if (data.data.token) {
+        store.commit("token/updateLocalAccessToken",data.data.token);
+        store.commit("token/setUser",data.data);
       }
 
-      return response.data;
+      return data;
     });
 };
 
 export const logout = () => {
   api.post("logout/");
-  TokenService.removeUser();
-  TokenService.updateLocalAccessToken(null);
+  store.commit("token/removeUser");
+  store.commit("token/updateLocalAccessToken",null);
 };
 
 export const getCurrentUser = () => {
-  return api.get("profile/").then((response) => {
-    const refresh_token = TokenService.getLocalRefreshToken();
-    const user = response.data;
+  return api.get("profile/").then((data) => {
+    const refresh_token =  store.getters["token/getLocalRefreshToken"];
+    const user = data.data;
     user.refresh_token = refresh_token;
-    TokenService.setUser(user);
+    store.modules.token.mutations.setUser(user);
 
-    return response.data;
+    return data.data;
   });
 };
 
 export const verifyUserToken = (onFail) => {
   return api
-    .post("token/verify/", { token: TokenService.getLocalAccessToken() })
+    .post("token/verify/", { token:  store.getters["token/getLocalAccessToken"] })
     .catch((err) => {
       if (onFail) onFail(err);
     });
@@ -66,10 +65,10 @@ export const verifyUserToken = (onFail) => {
 export const refreshUserToken = () => {
   return api
     .post("token/refresh/", {
-      refresh: TokenService.getLocalRefreshToken(),
+      refresh:  store.getters["token/getLocalRefreshToken"],
     })
-    .then((response) => {
-      TokenService.updateLocalAccessToken(response.data.access);
+    .then((data) => {
+       store.commit("token/updateLocalAccessToken",data.data.access);
     });
 };
 export const updateUser = (user) => {

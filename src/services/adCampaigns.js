@@ -1,13 +1,13 @@
-import api from "services/api";
+import api from "@/services/api";
 
-export const getAll = (signal) => {
+export const getAll = async (signal) => {
   return api.get("ad-campaigns/", { signal }).then(({ data }) => data);
 };
 
-export const get = (id, signal) => {
+export const get = async (id, signal) => {
   return api.get(`ad-campaigns/${id}/`, { signal }).then(({ data }) => data);
 };
-export const create = (formData, signal) => {
+export const create = async (formData, signal) => {
   return api
     .post("ad-campaigns/", formData, {
       headers: {
@@ -17,15 +17,15 @@ export const create = (formData, signal) => {
     })
     .then(({ data }) => data);
 };
-export const search = (search, signal) => {
+export const search = async(search, signal) => {
   return api
     .get(`ad-campaigns/?search=${search}`, { signal })
     .then(({ data }) => data);
 };
-export const remove = (id, signal) => {
+export const remove = async(id, signal) => {
   return api.delete(`ad-campaigns/${id}/`, { signal });
 };
-export const update = (id, formData, signal) => {
+export const update =  async(id, formData, signal) => {
   return api
     .patch(`ad-campaigns/${id}/`, formData, {
       headers: {
@@ -35,5 +35,5 @@ export const update = (id, formData, signal) => {
     })
     .then(({ data }) => data);
 };
-const Pins = { get, getAll, remove, update, create, search, getOwn };
-export default Pins;
+const AdCampaigns = { get, getAll, remove, update, create, search,};
+export default AdCampaigns;

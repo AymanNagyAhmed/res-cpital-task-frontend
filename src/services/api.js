@@ -1,16 +1,15 @@
 import axios from "axios";
-// Services
-import TokenService from "services/token";
-// Config
-import { backendURL } from "config/backend";
 
+// Config
+import { backendURL } from "@/config/backend";
+import store from "@/store";
 const instance = axios.create({
   baseURL: backendURL,
 });
 
 instance.interceptors.request.use(
   (config) => {
-    const token = TokenService.getLocalAccessToken();
+    const token =  store.getters["token/getLocalAccessToken"];
     if (token) {
       config.headers["Authorization"] = "Bearer " + token; // for Spring Boot back-end
     }
@@ -38,13 +37,12 @@ instance.interceptors.response.use(
         originalConfig._retry = true;
 
         try {
-          TokenService.updateLocalAccessToken(null);
+           store.commit("token/updateLocalAccessToken",null);
           const rs = await instance.post("token/refresh/", {
-            refresh: TokenService.getLocalRefreshToken(),
           });
 
           const { access } = rs.data;
-          TokenService.updateLocalAccessToken(access);
+           store.commit("token/updateLocalAccessToken",access);
           if (originalConfig.url === "token/verify/") {
             originalConfig.data = JSON.stringify({ token: access });
           }

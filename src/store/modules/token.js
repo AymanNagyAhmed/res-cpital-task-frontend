@@ -32,5 +32,6 @@ const TokenStore = {
   state,
   mutations,
   getters,
+  namespaced:true,
 };
 export default TokenStore;
