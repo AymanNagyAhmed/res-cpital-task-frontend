@@ -1,20 +1,19 @@
 import api from "@/services/api";
 import store from "@/store";
 
-export const register = ({ username, email, password1, password2 }) => {
+export const register = ({ name, email, password }) => {
   return api
-    .post("auth/registration/", {
+    .post("register", {
       name,
       email,
-    password
-     
+      password,
     })
-    .then(({data}) => {
+    .then(({ data }) => {
       if (data.data.token) {
         let user = data.data;
-        store.commit("token/updateLocalAccessToken",data.data.access_token);
+        store.commit("token/updateLocalAccessToken", data.data.token);
         user.refresh_token = data.data.refresh_token;
-         store.commit("token/setUser",user);
+        store.commit("token/setUser", user);
       }
 
       return data.data;
@@ -27,11 +26,10 @@ export const login = ({ email, password }) => {
       email,
       password,
     })
-    .then(({data}) => {
-      
+    .then(({ data }) => {
       if (data.data.token) {
-        store.commit("token/updateLocalAccessToken",data.data.token);
-        store.commit("token/setUser",data.data);
+        store.commit("token/updateLocalAccessToken", data.data.token);
+        store.commit("token/setUser", data.data);
       }
 
       return data;
@@ -41,12 +39,12 @@ export const login = ({ email, password }) => {
 export const logout = () => {
   api.post("logout/");
   store.commit("token/removeUser");
-  store.commit("token/updateLocalAccessToken",null);
+  store.commit("token/updateLocalAccessToken", null);
 };
 
 export const getCurrentUser = () => {
   return api.get("profile/").then((data) => {
-    const refresh_token =  store.getters["token/getLocalRefreshToken"];
+    const refresh_token = store.getters["token/getLocalRefreshToken"];
     const user = data.data;
     user.refresh_token = refresh_token;
     store.modules.token.mutations.setUser(user);
@@ -57,7 +55,9 @@ export const getCurrentUser = () => {
 
 export const verifyUserToken = (onFail) => {
   return api
-    .post("token/verify/", { token:  store.getters["token/getLocalAccessToken"] })
+    .post("token/verify/", {
+      token: store.getters["token/getLocalAccessToken"],
+    })
     .catch((err) => {
       if (onFail) onFail(err);
     });
@@ -65,10 +65,10 @@ export const verifyUserToken = (onFail) => {
 export const refreshUserToken = () => {
   return api
     .post("token/refresh/", {
-      refresh:  store.getters["token/getLocalRefreshToken"],
+      refresh: store.getters["token/getLocalRefreshToken"],
     })
     .then((data) => {
-       store.commit("token/updateLocalAccessToken",data.data.access);
+      store.commit("token/updateLocalAccessToken", data.data.access);
     });
 };
 export const updateUser = (user) => {
@@ -80,4 +80,3 @@ export const deactivateUser = (user) => {
 export const updatePassword = (new_passwords) => {
   return api.post("profile/", new_passwords);
 };
-

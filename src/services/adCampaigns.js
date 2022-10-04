@@ -1,11 +1,11 @@
 import api from "@/services/api";
 
 export const getAll = async (signal) => {
-  return api.get("ad-campaigns/", { signal }).then(({ data }) => data);
+  return api.get("ad-campaigns/", { signal }).then(({ data }) => data.data);
 };
 
 export const get = async (id, signal) => {
-  return api.get(`ad-campaigns/${id}/`, { signal }).then(({ data }) => data);
+  return api.get(`ad-campaigns/${id}/`, { signal }).then(({ data }) => data.data);
 };
 export const create = async (formData, signal) => {
   return api
